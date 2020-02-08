@@ -38,7 +38,6 @@ def agent_draw(agent):
         portrayal["w"] = 1
         portrayal["h"] = 1
         portrayal["Layer"] = 0
-        # portrayal["r"] = 0.15
 
     elif type(agent) is Attraction:
         portrayal["Color"] = "purple"
@@ -60,23 +59,17 @@ def agent_draw(agent):
             portrayal["text_color"] = "black"
 
         if agent.weight == 0.0:
-             portrayal["Color"] = "#F6412D"
+            portrayal["Color"] = "#F6412D"
         elif agent.weight == 0.25:
-             portrayal["Color"] = "#FF5607"
+            portrayal["Color"] = "#FF5607"
         elif agent.weight == 0.5:
-             portrayal["Color"] = "#FF9800"
+            portrayal["Color"] = "#FF9800"
         elif agent.weight == 0.75:
-             portrayal["Color"] = "#FFC100"
+            portrayal["Color"] = "#FFC100"
         elif agent.weight == 1.0:
-             portrayal["Color"] = "#FFEC19"
+            portrayal["Color"] = "#FFEC19"
         elif agent.strategy == "Random" or agent.strategy == "Random_test_4":
             portrayal["Color"] = "#add8e6"
-
-
-
-
-        # UNCOMMENT THIS TO SEE SANNE'S HEAD AS CUSTOMER!
-        # portrayal["Shape"] = "starlight.png"
 
     return portrayal
 
@@ -122,21 +115,6 @@ linechart = ChartModule([
                     {"Label": "0.75", "Color": "#FFC100"},
                     {"Label": "1.00", "Color": "#FFEC19"},
                     ], data_collector_name='datacollector')
-# except:
-#     chart = PieChartModule([
-#                         {"Label": "0.00", "Color": "#F6412D"},
-#                         {"Label": "0.25", "Color": "#FF5607"},
-#                         {"Label": "0.50", "Color": "#FF9800"},
-#                         {"Label": "0.75", "Color": "#FFC100"},
-#                         {"Label": "1.00", "Color": "#FFEC19"},
-#                         ], data_collector_name='datacollector')
-#     linechart = ChartModule([
-#                         {"Label": "0.00", "Color": "#F6412D"},
-#                         {"Label": "0.25", "Color": "#FF5607"},
-#                         {"Label": "0.50", "Color": "#FF9800"},
-#                         {"Label": "0.75", "Color": "#FFC100"},
-#                         {"Label": "1.00", "Color": "#FFEC19"},
-#                         ], data_collector_name='datacollector')
 
 linechart_2 = ChartModule([
                     {"Label": "score", "Color": "#F6412D"},
@@ -153,7 +131,7 @@ model_params = {
     "strategy": UserSettableParameter('choice', 'Strategy choice', value='Closest_by',
                                       choices=['Random', 'Closest_by']),
     "theme": UserSettableParameter('choice', 'Theme park lay-out', value='circle',
-                                      choices=['random', 'circle', 'cluster']),
+                                   choices=['random', 'circle', 'cluster']),
     "max_time": max_time,
     "weight": UserSettableParameter("slider", "Weight of waitingtime", 0, 0, 1, 0.25),
     "adaptive": True
@@ -162,7 +140,6 @@ model_params = {
 server = ModularServer(
     Themepark,
     [grid, histogram, chart, linechart, linechart_2],
-    # [grid, histogram],
     "Theme Park Model",
     model_params,
 )
