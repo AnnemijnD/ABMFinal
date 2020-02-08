@@ -8,12 +8,10 @@ try:
     from .route import get_coordinates, get_attraction_coordinates, Route
     from .customer import Customer
     from .attraction import Attraction
-    from .monitor import Monitor
 except:
     from route import get_coordinates, get_attraction_coordinates, Route
     from customer import Customer
     from attraction import Attraction
-    from monitor import Monitor
 import pickle
 import matplotlib.pyplot as plt
 
@@ -103,7 +101,7 @@ class Themepark(Model):
 
         self.total_waited_time = 0
 
-        self.monitor = Monitor(self.max_time, self.N_attr, self.positions)
+
 
     def make_score(self):
         ideal = {}
