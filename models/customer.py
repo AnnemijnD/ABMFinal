@@ -37,7 +37,6 @@ class Customer(Agent):
                 self.destination = random.choice(positions)
 
         if self.strategy == 'Closest_by':
-
             self.destination = self.closest_by().pos
 
         self.waitingtime = None
@@ -47,9 +46,6 @@ class Customer(Agent):
         self.waited_period = 0
         self.in_attraction = False
         self.in_attraction_list = []
-        self.memory_strategy = MEMORY
-        self.memory_succeses = []
-        self.changes_memory = []
 
         self.prediction_strategies = self.prediction_all_strategies()
         self.strategy_swap_hist = 0
@@ -273,18 +269,6 @@ class Customer(Agent):
         people = self.model.calculate_people_sorted()
         return people
 
-    def get_score(self, distances, waitinglines):
-        """
-        Return a score of distance + watingtime for all attractions.
-        """
-
-        scores = {}
-
-        for i in range(len(distances)):
-            scores[i] = distances.get(i) + waitinglines.get(i)
-
-        return scores
-
     def update_strategy(self):
 
         strategy_ranking = {}
@@ -329,9 +313,6 @@ class Customer(Agent):
                 else:
                     best_strat = random.choice(res)
                 self.weight = best_strat
-                self.strategy_swap_hist += 1
-
-
 
     def step(self):
         """
@@ -383,7 +364,6 @@ class Customer(Agent):
         self.prediction_strategies = self.prediction_all_strategies()
 
         return self.model.attractions[predicted_attraction]
-
 
     def prediction_all_strategies(self):
 
