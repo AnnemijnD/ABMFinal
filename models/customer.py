@@ -16,14 +16,12 @@ starting_positions = [(int((WIDTH/2)-1), 0), (int(WIDTH/2), 0), (int((WIDTH/2)+1
 
 
 class Customer(Agent):
-    def __init__(self, unique_id, model, pos, x_list, y_list, positions, strategy, weight, adaptive):
+    def __init__(self, unique_id, model, pos, positions, strategy, weight, adaptive):
         super().__init__(unique_id, model)
         self.pos = pos
         self.model = model
         self.unique_id = unique_id
 
-        self.x_list = x_list
-        self.y_list = y_list
         self.positions = positions
         self.current_a = None
         self.strategy = strategy
@@ -42,35 +40,19 @@ class Customer(Agent):
 
             self.destination = self.closest_by().pos
 
-
-        self.changed_strategy = False
         self.waitingtime = None
         self.waiting = False
         self.total_ever_waited = 0
         self.nmbr_attractions = 0
         self.waited_period = 0
-        self.sadness_score = 0
         self.in_attraction = False
         self.in_attraction_list = []
-        self.strategy = strategy
-        self.goals = self.get_goals()
         self.memory_strategy = MEMORY
         self.memory_succeses = []
         self.changes_memory = []
-        self.strategy_choice = [0,0,0,0,0]
 
         self.prediction_strategies = self.prediction_all_strategies()
         self.strategy_swap_hist = 0
-        # self.several_weights = [0,0.25, 0.5, 0.75, 1]
-
-
-    def get_goals(self):
-        """Set random goals."""
-        goals = []
-        attractions = self.model.get_attractions()
-        for attr in attractions:
-            goals.append(attr)
-        return goals
 
     def make_history(self):
         history = {}
@@ -303,76 +285,6 @@ class Customer(Agent):
 
         return scores
 
-    def update_strategy2(self):
-        """
-        Update an agents memory and change strategy based on memory.
-        """
-        counter = 0
-
-        # If all past steps weren't succesful, change strategy
-        if len(self.memory_succeses) >= self.memory_strategy:
-            for num in self.memory_succeses:
-                if num == 0:
-                    counter += 1
-
-            # Change strategy
-            if counter == self.memory_strategy and self.changed_strategy is False:
-                # ___________________________________________________
-                # COMMMENTEN als je niet strategie wilt veranderen
-                # if self.strategy == "Random":
-                #     self.strategy = "Closest_by"
-                # else:
-                #     self.strategy = "Random"
-
-                self.changed_strategy = True
-                self.memory_succeses.append(1)
-                self.memory_succeses.pop()
-        else:
-
-            # Determine if strategy was succesful.
-            # Take into account: waitingtimes of all other attractions.
-            # TODO: nog iets anders?
-            waitinglines = self.get_waiting_lines()
-
-            # if succes:
-            succes = []
-            for value, key in waitinglines.items():
-                if key == min(waitinglines.keys()):
-                    succes.append(value)
-
-            if waitinglines.get(self.current_a.unique_id) in succes:
-                self.memory_succeses.append(1)
-
-            # No succes
-            else:
-                self.memory_succeses.append(0)
-
-    def update_strategy3(self):
-
-            strategy_ranking = {}
-            queues = self.get_waiting_lines()
-            chosen_strategy = self.weight
-
-            if self.current_a is not None:
-                # for attraction in queues.keys():
-                #     if queues[attraction] < queues[self.current_a.unique_id]:
-                #         print("VERKEERDE STRATEGY, attraction:", attraction, "nr:", self.unique_id)
-                for strategy in self.prediction_strategies.keys():
-                    attraction = self.prediction_strategies[strategy][0]
-                    if queues[attraction.unique_id] < queues[self.current_a.unique_id] and not strategy == chosen_strategy:
-
-                        # strategy_ranking[strategy] = queues[attraction.unique_id] + self.prediction_strategies[strategy][1]
-                        strategy_ranking[strategy] = queues[attraction.unique_id]
-
-                if len(strategy_ranking.values()) > 0:
-                    minval = min(strategy_ranking.values())
-                    res = [k for k, v in strategy_ranking.items() if v == minval]
-                    if len(res) is 1:
-                        best_strat = res[0]
-                    else:
-                        best_strat = random.choice(res)
-                    self.weight = best_strat
-
     def update_strategy(self):
 
         strategy_ranking = {}
@@ -425,9 +337,6 @@ class Customer(Agent):
         """
         This method should move the customer using the `random_move()` method.
         """
-
-        if self.waiting is True:
-            self.sadness_score += 1
 
         if self.in_attraction is True:
             self.in_attraction_list.append(1)
