@@ -9,32 +9,36 @@ import numpy as np
 import math
 # from model import calculate_people
 
-WIDTH = 36
-HEIGHT = 36
-MEMORY = 5
-starting_positions = [(int((WIDTH/2)-1), 0), (int(WIDTH/2), 0), (int((WIDTH/2)+1), 0)]
-
 
 class Customer(Agent):
-    def __init__(self, unique_id, model, pos, positions, strategy, weight, adaptive):
+    def __init__(self, unique_id, model, pos, strategy, weight, adaptive):
         super().__init__(unique_id, model)
+
+        """
+        Args:
+        id (int): a unique id to represent the agent
+        model (Themepark): the model to link the agent to
+        pos (tuple(int,int)): the position of the agent (x,y)
+        strategy (str): indicates if agent uses a strategy or behaves randomly
+        weight (float): float indicating the weight given to distance and queuetime
+        adaptive (bool): if true, agent can switch strategies through run
+
+        """
         self.pos = pos
         self.model = model
-        self.unique_id = unique_id
-
-        self.positions = positions
         self.current_a = None
         self.strategy = strategy
         self.history = self.make_history()
         self.weight = weight
-        if weight == "Random_test_4":
+        if self.weight == "Random_test_4":
             self.strategy = "Random_test_4"
         self.adaptive = adaptive
         self.all_strategies =  [x for x in self.model.strategies if x != 'Random_test_4']
+
         if self.strategy == 'Random' or self.strategy == "Random_test_4":
-            self.destination = random.choice(positions)
+            self.destination = random.choice(self.model.positions)
             while self.destination is self.pos:
-                self.destination = random.choice(positions)
+                self.destination = random.choice(self.model.positions)
 
         if self.strategy == 'Closest_by':
             self.destination = self.closest_by().pos
@@ -46,11 +50,14 @@ class Customer(Agent):
         self.waited_period = 0
         self.in_attraction = False
         self.in_attraction_list = []
-
         self.prediction_strategies = self.prediction_all_strategies()
         self.strategy_swap_hist = 0
 
     def make_history(self):
+        """
+        This method provides the framework for the customer attraction history
+        """
+
         history = {}
         attractions = self.model.attractions
         for attraction in range(len(attractions)):
@@ -63,6 +70,7 @@ class Customer(Agent):
         This method calculates a penalty for attractions that were visited more
         often than other attractions
         """
+
 
         total_difference_sum = 0
         if current_attraction == 0:
@@ -180,19 +188,15 @@ class Customer(Agent):
                 self.total_ever_waited += self.waited_period
                 self.waited_period = 0
 
-                # Update memory
-                # if self.init_weight is None:
-                #     self.update_strategy()
-
                 # Set current attraction back to None when customer leaves.
                 self.current_a = None
 
                 if self.strategy == "Closest_by":
                     self.destination = self.closest_by().pos
                 elif self.strategy == 'Random' or self.strategy == "Random_test_4":
-                    self.destination = random.choice(self.positions)
+                    self.destination = random.choice(self.model.positions)
                     while self.destination is self.pos:
-                        self.destination = random.choice(self.positions)
+                        self.destination = random.choice(self.model.positions)
                 self.waiting = False
                 self.waited_period = 0
 

@@ -72,6 +72,11 @@ class Themepark(Model):
                 "0.75": lambda m: self.strategy_counter(self.strategies[4]),
                 "1.00": lambda m: self.strategy_counter(self.strategies[5]),
                 })
+
+        elif strategy == "Random":
+            self.datacollector = DataCollector(
+            {"Random": lambda m: self.N_cust})
+
         else:
             self.datacollector = DataCollector(
                 {"0.00": lambda m: self.strategy_counter(self.strategies[0]),
@@ -255,7 +260,7 @@ class Themepark(Model):
                 weight = None
             else:
                 weight = weights_list[i]
-            a = Customer(i, self, pos, self.positions, strategy, weight, self.adaptive)
+            a = Customer(i, self, pos, strategy, weight, self.adaptive)
             self.schedule_Customer.add(a)
             self.grid.place_agent(a, pos)
             cust_list.append(a)

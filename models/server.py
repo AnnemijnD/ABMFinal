@@ -58,7 +58,9 @@ def agent_draw(agent):
             portrayal["text"] = agent.unique_id
             portrayal["text_color"] = "black"
 
-        if agent.weight == 0.0:
+        if agent.strategy == "Random" or agent.strategy == "Random_test_4":
+            portrayal["Color"] = "#add8e6"
+        elif agent.weight == 0.0:
             portrayal["Color"] = "#F6412D"
         elif agent.weight == 0.25:
             portrayal["Color"] = "#FF5607"
@@ -68,8 +70,7 @@ def agent_draw(agent):
             portrayal["Color"] = "#FFC100"
         elif agent.weight == 1.0:
             portrayal["Color"] = "#FFEC19"
-        elif agent.strategy == "Random" or agent.strategy == "Random_test_4":
-            portrayal["Color"] = "#add8e6"
+
 
     return portrayal
 
@@ -128,7 +129,7 @@ model_params = {
     "width": width,
     "N_attr": UserSettableParameter("slider", "Number of attractions", num_agents, 1, num_agents, 1),
     "N_cust": UserSettableParameter("slider", "Number of customers", int(N_cust/1.5), 1, N_cust * 2, 1),
-    "strategy": UserSettableParameter('choice', 'Strategy choice', value='Closest_by',
+    "strategy": UserSettableParameter('choice', 'Strategy choice', value='Random',
                                       choices=['Random', 'Closest_by']),
     "theme": UserSettableParameter('choice', 'Theme park lay-out', value='circle',
                                    choices=['random', 'circle', 'cluster']),
