@@ -197,7 +197,7 @@ class Themepark(Model):
             if self.grid.is_cell_empty(pos):
 
                 name = str(i)
-                a = Attraction(i, self, pos, name, self.N_cust, self.weight)
+                a = Attraction(i, self, pos, name)
                 attractions[i] = a
 
                 self.schedule_Attraction.add(a)
