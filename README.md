@@ -40,8 +40,6 @@ To use the buttons, select your choice and click on "Reset" in the right top of 
 Furthermore, after starting the model, three charts are displayed. At the top, a pie chart that shows the ratio of all strategies at a specific moment.
 Secondly, a linechart that shows the course of how many customers adopted which strategy. At last, a linechart showing the park efficiency score over time.
 
-x
-> :warning: **Sometimes **: Be very careful here
 
 ### Structure
 * ```run.py```: main module to run the vizualisation of the model.
