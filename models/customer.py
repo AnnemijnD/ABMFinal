@@ -68,12 +68,14 @@ class Customer(Agent):
         """
         This method calculates and returns a penalty for attractions that were visited more
         often than other attractions.
+        Args:
+        current_attraction (Attraction): the attraction object the method calculates
+                                         a penalty for.
         """
 
 
         total_difference_sum = 0
 
-        # return 0 if current attraction was not visited before
         if current_attraction == 0:
             return 0
 
