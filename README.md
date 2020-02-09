@@ -25,6 +25,13 @@ or
 ```
 mesa runserver
 ```
+This will automatically open up a UI on your standard browser. The UI consists of three buttons that change the parameters of the model. These are:
+* Number of customers: default is set to 20
+* Strategy choice: this will generate customers with a specific strategy.
+  * Closest_by: customers will choose their next attraction based on distance and/or waitingtime.
+  * Random: customers will choose a random attraction as their next destination
+* Theme park lay-out: either circle or cluster.
+
 
 #### /models
 
@@ -34,6 +41,26 @@ mesa runserver
 * ```monitor.py```: makes predictions of an agent's move based on distance and wating time.
 * ```route.py```: calculates coordinates of attractions and adds possible obstacles.
 * ```server.py```: launches the mesa visualization.
+* ```analyse.py```: analyse data and generates plots.
+* ```main.py```: see description below
+
+### Collect data
+Data collection is done by running:
+```
+python models/main.py
+```
+This script will run 65 runs of the model with 1000 time steps. For example:
+
+```
+theme = "cluster"
+strategy = "Random"
+```
+However, if data needs to be collected for a run with a different strategy, parameters may be changed:
+```
+theme = "circle"
+strategy = "Closest_by"
+```
+
 
 ### Built with
 * [Mesa](https://github.com/projectmesa/mesa) - ABM Framework
