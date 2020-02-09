@@ -129,7 +129,7 @@ class Themepark(Model):
 
     def make_score(self):
         """
-        Calculates and returns an efficiency score for the enire theme park. 
+        Calculates and returns an efficiency score for the enire theme park.
         """
 
         # calculates the ideal distribution of customers over the attractions per attraction
@@ -178,11 +178,18 @@ class Themepark(Model):
     def make_strategy_composition(self):
         """
         Make a composition of all strategies over the entire theme park.
+        Returns a dictionary with strategies as keys and the fraction of people
+        using this strategy as value.
         """
+
+        # if this is a run with adaptive agents and noise
         if self.strategy == "Random_test_4":
             self.strategies = ["Random_test_4", 0.0, 0.25, 0.50, 0.75, 1.0]
-            dict = {self.strategies[0]: 1/6, self.strategies[1]: 0.20, self.strategies[2]: 0.20,
+
+            # make dictionary with fractions (values can be ignored!)
+            dict = {self.strategies[0]: 0, self.strategies[1]: 0.20, self.strategies[2]: 0.20,
                     self.strategies[3]: 0.20, self.strategies[4]: 0.20, self.strategies[5]: 0.20}
+
 
             composition_list = []
             for i in range(len(self.strategies)):
@@ -190,30 +197,37 @@ class Themepark(Model):
                     dict[self.strategies[i]] = FRACTION_RANDOM
                     continue
                 else:
+
+                    # choose a random number
                     composition_list.append(random.randint(0,100))
+
             sum_comp = sum(composition_list)
             sum_comp = sum_comp - sum_comp * FRACTION_RANDOM
             for i in range(len(self.strategies)):
                 if i == 0:
                     continue
                 else:
+
+                    # determine the fraction of customer agents with this strategy
                     dict[self.strategies[i]] = composition_list[i-1] / sum_comp
 
-        # Runs without a random strategy
+        # runs without noise
         else:
+            # make dictionary with fractions (values can be ignored!)
             dict = {self.strategies[0]: 0.20, self.strategies[1]:0.20, self.strategies[2]:0.20,
                     self.strategies[3]:0.20, self.strategies[4]:0.20}
 
             composition_list = []
             for i in range(len(self.strategies)):
 
+                # choose a random number
                 composition_list.append(random.randint(0, 100))
 
             sum_comp = sum(composition_list)
 
-            sum_comp = sum_comp
             for i in range(len(self.strategies)):
 
+                # determine the fraction of agents with this strategy
                 dict[self.strategies[i]] = composition_list[i-1] / sum_comp
 
         return dict
@@ -221,13 +235,15 @@ class Themepark(Model):
     def make_attractions(self):
         """
         Initialize attractions on fixed positions, defined in the global
-        variables x_list and y_list.
+        variables x_list and y_list. Returns a dictionary of attractions
         """
 
         attractions = {}
         for i in range(self.N_attr):
 
             pos = (self.x_list[i], self.y_list[i])
+
+            # place attraction if grid cell is empty
             if self.grid.is_cell_empty(pos):
 
                 name = str(i)
@@ -256,8 +272,13 @@ class Themepark(Model):
         return attractions
 
     def add_customers(self, N_cust, added=False):
-        """ Initialize customers on random positions."""
+        """
+        Initialize customers on random positions.
+        Returns a list of all customers
+        """
 
+        # a list of weights of which the indices correspond to the id of the agent
+        # to who this weight is given
         weights_list = []
 
         # Adaptive strategy
@@ -304,6 +325,8 @@ class Themepark(Model):
                 weight = None
             else:
                 weight = weights_list[i]
+
+            # make customer
             a = Customer(i, self, pos, strategy, weight, self.adaptive)
             self.schedule_Customer.add(a)
             self.grid.place_agent(a, pos)
@@ -312,10 +335,14 @@ class Themepark(Model):
         return cust_list
 
     def calculate_people(self):
-        """Calculate how many customers are in which attraction."""
+        """
+        Calculate how many customers are in which attraction.
+        Returns a list of which the indices correspond to the ids of the atttraction
+        """
 
         counter_total = {}
 
+        # loop through attractions
         for attraction_pos in self.positions:
 
             agents = self.grid.get_neighbors(
@@ -326,12 +353,15 @@ class Themepark(Model):
             )
 
             counter = 0
+
+            # find customers in this attraction
             for agent in agents:
                 if type(agent) is Customer:
                     counter += 1
                 else:
                     attraction = agent
 
+            # update the amount of customers in this attraction
             attraction.N_current_cust = counter
             counter_total[attraction.unique_id] = counter
 
@@ -350,17 +380,15 @@ class Themepark(Model):
 
         return counter_total
 
-
     def calculate_people_sorted(self):
         """
         Calculate how many customers are in which attraction.
-        Returns a SORTED LIST.
-        For example: indexes = [3, 2, 5, 1, 4]
-        indicates that attraction3 has the least people waiting.
+        Returns a dictionary with attraction-ids as keys and customers in line as values.
         """
 
         counter_total = {}
 
+        # loop through attractions
         for attraction_pos in self.positions:
 
             agents = self.grid.get_neighbors(
@@ -371,15 +399,19 @@ class Themepark(Model):
             )
 
             counter = 0
+
+            # find customers in this attraction
             for agent in agents:
                 if type(agent) is Customer:
                     counter += 1
                 else:
                     attraction = agent
 
+            # update the amount of customers in this attraction
             attraction.N_current_cust = counter
             self.attraction_history[attraction][self.totalTOTAL] = counter
             counter_total[attraction.unique_id] = counter
+
         return counter_total
 
     def get_strategy_history(self):
@@ -440,6 +472,8 @@ class Themepark(Model):
         - How many rides were taken
         - Number of times in the same attraction
         - Total waiting time
+
+        Returns the mean happiness of all customers
         """
         customers = self.get_customers()
         scores = []
@@ -523,7 +557,6 @@ class Themepark(Model):
         print()
         print("RUN HAS ENDED")
         print()
-
 
     def save_data(self):
         """Save data of all attractions and customers."""
