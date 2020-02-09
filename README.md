@@ -1,5 +1,5 @@
 # Agent Based Modelling UvA (2020): Theme Park Dynamics
-In this project, ABM us used to simulate visitors of a theme park. The focus will be on distances between attractions and waiting lines. A visualization of a theme park is made with a [visualization toolkit of Mesa](https://mesa.readthedocs.io/en/master/apis/visualization.html).
+Since people tend to avoid long waiting lines for attractions, theme parks aim to distribute thepeople over the attractions in the most optimal way. In this project, an agent based model is applied to evaluate dynamics of visitors in a theme park. Visitors with different strategies are simulated in a theme park. The focus of vistors' strategies will lie on distances between attractions and waiting lines. A visualization of a theme park is made with a [visualization toolkit of Mesa](https://mesa.readthedocs.io/en/master/apis/visualization.html).
 
 ## Example visualization of model run
 ![Alt Text](https://github.com/rebeccadavidsson/ABM/blob/master/abm.gif)
@@ -34,6 +34,10 @@ This will automatically open up a UI on your standard browser. The UI consists o
 
 Furthermore, after starting the model, three charts are displayed. At the top, a pie chart that shows the ratio of all strategies at a specific moment.
 Secondly, a linechart that shows the course of how many customers adopted which strategy. At last, a linechart showing the park efficiency score over time.
+
+### Structure
+* ```run.py```: main module to run the vizualisation of the model.
+* ```sensitivity_analysis.py```: a module that is used to plot results of the OFAT sensitivity analysis.
 
 #### /models
 
