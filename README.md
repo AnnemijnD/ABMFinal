@@ -32,6 +32,8 @@ This will automatically open up a UI on your standard browser. The UI consists o
   * Random: customers will choose a random attraction as their next destination
 * Theme park lay-out: either circle or cluster.
 
+Furthermore, after starting the model, three charts are displayed. At the top, a pie chart that shows the ratio of all strategies at a specific moment.
+Secondly, a linechart that shows the course of how many customers adopted which strategy. At last, a linechart showing the park efficiency score over time.
 
 #### /models
 
