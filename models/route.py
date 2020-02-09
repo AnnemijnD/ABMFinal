@@ -7,7 +7,6 @@ WIDTH = 36
 HEIGHT = 36
 NUM_CLUSTERS = 3
 MAX = 2
-starting_positions = [[int((WIDTH/2)-1), 0], [int(WIDTH/2), 0], [int((WIDTH/2)+1), 0]]
 
 
 class Route(Agent):
@@ -27,9 +26,7 @@ def get_coordinates(width, height, num_obstacles, num_attractions, method):
 
     for i in range(num_obstacles):
         coordinate = (random.randrange(width), random.randrange(height))
-
-        # TODO: checken of het overlapt met andere agents
-        while coordinate in positions or coordinate in starting_positions:
+        while coordinate in positions:
             coordinate = (random.randrange(width), random.randrange(height))
 
         coordinates.append((random.randrange(width), random.randrange(height)))
@@ -44,7 +41,6 @@ def get_coordinates(width, height, num_obstacles, num_attractions, method):
 
 def get_attraction_coordinates(width, height, num_attractions, method):
     """Generate random coordinates for attractions."""
-    # TODO: minder random, checken dat ze niet te dicht bij elkaar mogen.
     xlist, ylist, total = [], [], []
 
     if method == "random":
@@ -66,15 +62,17 @@ def get_attraction_coordinates(width, height, num_attractions, method):
 
     elif method == "cluster":
 
+        # Generate x starting positions, the rest of the coordinates will
+        # be generated around these points
         for i in range(NUM_CLUSTERS):
             xlist.append(random.randrange(MAX, WIDTH - MAX))
             ylist.append(random.randrange(6, HEIGHT - MAX))
             total.append((xlist[i], ylist[i]))
 
         counter = 0
-
         while counter < num_attractions - NUM_CLUSTERS:
 
+            # generate random coordinate close to the heart of a cluster
             current_clust = random.choice(total)
             x_r = random.randrange(-MAX, MAX)
             y_r = random.randrange(-MAX, MAX)
@@ -93,5 +91,4 @@ def get_attraction_coordinates(width, height, num_attractions, method):
 
 
 def calc_points(r, n, WIDTH, HEIGHT):
-
     return [(int(math.cos(2* np.pi/n*x)*r) + int(WIDTH / 2), int(math.sin(2* np.pi/n*x)*r) + int(HEIGHT / 2)) for x in range(0, n)]
