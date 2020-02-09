@@ -74,29 +74,6 @@ def agent_draw(agent):
 
     return portrayal
 
-
-class HistogramModule(VisualizationElement):
-    package_includes = ["Chart.min.js"]
-    local_includes = ["HistogramModule.js"]
-
-    def __init__(self, bins, canvas_height, canvas_width):
-        self.canvas_height = canvas_height
-        self.canvas_width = canvas_width
-        self.data = []
-        new_element = "new HistogramModule({}, {}, {}, {})"
-        new_element = new_element.format(bins,
-                                         canvas_width,
-                                         canvas_height,
-                                         self.data)
-        self.js_code = "elements.push(" + new_element + ");"
-
-    def render(self, model):
-        """Render a histogram with HistogramModule.js"""
-
-        data = model.calculate_people()
-        return data
-
-
 grid = CanvasGrid(agent_draw, width, height, width * pixel_ratio, height * pixel_ratio)
 
 # try:
@@ -121,26 +98,23 @@ linechart_2 = ChartModule([
                     {"Label": "score", "Color": "#F6412D"},
                     ], data_collector_name='datacollector2')
 
-histogram = HistogramModule(["Attraction1", "Attraction2", "Attraction3",
-                            "Attraction4", "Attraction5"], 20, 50)
-
 model_params = {
     "height": height,
     "width": width,
-    "N_attr": UserSettableParameter("slider", "Number of attractions", num_agents, 1, num_agents, 1),
-    "N_cust": UserSettableParameter("slider", "Number of customers", int(N_cust/1.5), 1, N_cust * 2, 1),
+    "N_attr": num_agents,
+    "N_cust": UserSettableParameter("slider", "Number of customers", 20, 1, N_cust * 2, 1),
     "strategy": UserSettableParameter('choice', 'Strategy choice', value='Closest_by',
                                       choices=['Random', 'Closest_by']),
-    "theme": UserSettableParameter('choice', 'Theme park lay-out', value='circle',
-                                   choices=['random', 'circle', 'cluster']),
+    "theme": UserSettableParameter('choice', 'Theme park lay-out', value='cluster',
+                                   choices=['circle', 'cluster']),
     "max_time": max_time,
-    "weight": UserSettableParameter("slider", "Weight of waitingtime", 0, 0, 1, 0.25),
+    "weight": 0,
     "adaptive": True
 }
 
 server = ModularServer(
     Themepark,
-    [grid, histogram, chart, linechart, linechart_2],
+    [grid, chart, linechart, linechart_2],
     "Theme Park Model",
     model_params,
 )

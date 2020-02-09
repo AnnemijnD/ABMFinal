@@ -8,9 +8,11 @@ import numpy as np
 try:
     from .customer import Customer
     from .attraction import Attraction
+    from .route import get_attraction_coordinates
 except:
     from customer import Customer
     from attraction import Attraction
+    from route import get_attraction_coordinates
 
 
 # fraction of population that is random if noise is added
@@ -45,7 +47,6 @@ class Themepark(Model):
                             they are using
             adaptive (bool): whether customer agents are able to switch strategies
         """
-
         self.theme = theme
         self.max_time = max_time
         self.N_attr = N_attr
@@ -53,7 +54,6 @@ class Themepark(Model):
         self.weight = weight
         self.adaptive = adaptive
         self.strategies = STRATEGIES
-        self.x_list, self.y_list, self.positions = xlist, ylist, positions
         self.happinesses = []
         self.N_attr = N_attr
         self.N_cust = N_cust
@@ -66,6 +66,13 @@ class Themepark(Model):
         self.schedule = BaseScheduler(self)
         self.schedule_Attraction = BaseScheduler(self)
         self.schedule_Customer = BaseScheduler(self)
+
+        # Cluster or circle coordinates
+        if self.theme == "cluster":
+            self.x_list, self.y_list, self.positions = xlist, ylist, positions
+        elif self.theme == "circle":
+            self.x_list, self.y_list, self.positions = get_attraction_coordinates(width,
+                                                       height, N_attr, "circle")
 
         # keeps up the current time
         self.totalTOTAL = 0
