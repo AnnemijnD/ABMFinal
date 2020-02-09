@@ -61,7 +61,7 @@ class Themepark(Model):
         self.height = height
         self.total_steps = 0
         self.cust_ids = N_cust
-        self.strategy = "Closest_by"
+        self.strategy = strategy
         self.grid = MultiGrid(width, height, torus=False)
         self.schedule = BaseScheduler(self)
         self.schedule_Attraction = BaseScheduler(self)
