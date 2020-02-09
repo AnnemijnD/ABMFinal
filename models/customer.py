@@ -22,7 +22,6 @@ class Customer(Agent):
         strategy (str): indicates if agent uses a strategy or behaves randomly
         weight (float): float indicating the weight given to distance and queuetime
         adaptive (bool): if true, agent can switch strategies through run
-
         """
         self.pos = pos
         self.model = model
@@ -41,7 +40,7 @@ class Customer(Agent):
                 self.destination = random.choice(self.model.positions)
 
         if self.strategy == 'Closest_by':
-            self.destination = self.closest_by().pos
+            self.destination = self.use_strategy().pos
 
         self.waitingtime = None
         self.waiting = False
@@ -67,8 +66,8 @@ class Customer(Agent):
 
     def penalty(self, current_attraction):
         """
-        This method calculates a penalty for attractions that were visited more
-        often than other attractions
+        This method calculates and returns penalty for attractions that were visited more
+        often than other attractions.
         """
 
 
@@ -92,7 +91,7 @@ class Customer(Agent):
     def move(self):
         '''
         This method should get the neighbouring cells (Moore's neighbourhood),
-        select one, and move the agent to this cell.
+        select one closest to the destination, and move the agent there.
         '''
 
         possible_steps = self.model.grid.get_neighborhood(
@@ -101,21 +100,8 @@ class Customer(Agent):
             radius=1,
             include_center=False
         )
-        obstacles_check = self.model.grid.get_neighbors(
-            self.pos,
-            moore=True,
-            include_center=False,
-            radius=1
-        )
 
-        for obj in obstacles_check:
-            if type(obj) is Route:
-                try:
-                    possible_steps.remove(obj.pos)
-                except ValueError:
-                    continue # TODO, voor als we obstakels willen
-
-        # start with random choice of position
+        # chooses random step
         temp = random.choice(possible_steps)
 
         # Loop over every possible step to get fastest step
@@ -148,6 +134,7 @@ class Customer(Agent):
     def check_move(self):
         """ Checks if a move can be done, given a new position."""
 
+
         if self.waitingtime is not None:
 
             # set in ride to true false
@@ -168,6 +155,7 @@ class Customer(Agent):
                             attraction.N_current_cust -= 1
                             self.model.attraction_history[attraction][self.model.totalTOTAL] -=1
 
+            # if agent is next in line
             if self.waitingtime == self.waited_period:
 
                 if self.current_a is not None:
@@ -188,11 +176,12 @@ class Customer(Agent):
                 self.total_ever_waited += self.waited_period
                 self.waited_period = 0
 
-                # Set current attraction back to None when customer leaves.
+                # set current attraction back to None when customer leaves.
                 self.current_a = None
 
+                # decide on new destination
                 if self.strategy == "Closest_by":
-                    self.destination = self.closest_by().pos
+                    self.destination = self.use_strategy().pos
                 elif self.strategy == 'Random' or self.strategy == "Random_test_4":
                     self.destination = random.choice(self.model.positions)
                     while self.destination is self.pos:
@@ -201,9 +190,6 @@ class Customer(Agent):
                 self.waited_period = 0
 
         if self.pos == self.destination:
-
-            # if self.waited_period == 0:
-                # if self.init_weight is None:
 
             # Check which attraction
             attractions = self.model.get_attractions()
@@ -241,11 +227,8 @@ class Customer(Agent):
 
     def get_walking_distances(self):
         """
-        Return index of attraction-id with shortest walking distance.
+        Returns dictionary of attraction-ids with their distances as values.
         Function uses pythagoras formula.
-        For example:
-        indexes = [3, 2, 5, 1, 4]
-        indicates that attraction3 has the shortest walking distance.
         """
         attractions = self.model.get_attractions()
 
@@ -271,6 +254,7 @@ class Customer(Agent):
         indicates that attraction3 has the shortest waiting line.
         """
         people = self.model.calculate_people_sorted()
+        print(people)
         return people
 
     def update_strategy(self):
@@ -330,10 +314,11 @@ class Customer(Agent):
 
         self.move()
 
-    def closest_by(self):
+    def use_strategy(self):
         """
-        This method returns the attraction closest by the customer
-        Adds a deterministic penalty per attraction based on the penalty method.
+        This method returns the attraction predicted by the current strategy of
+        the customer.Adds a deterministic penalty per attraction based
+        on the penalty method.
         """
         predictions = self.get_walking_distances()
 
@@ -370,6 +355,11 @@ class Customer(Agent):
         return self.model.attractions[predicted_attraction]
 
     def prediction_all_strategies(self):
+        """
+        Makes a prediction for all possible strategies
+        Returns a dictionary with the strategies as keys and the attractions,
+        predictions and arrival times as value
+        """
 
         prediction_per_strategy = {}
 
