@@ -67,6 +67,15 @@ theme = "circle"
 strategy = "Closest_by"
 ```
 
+### Analyse data
+To analyse the data with plots, use ```analyse.py``` . Files and data to be included can be found in either the folder 'data' or 'results'. All functions require input of a specific file from the these folders, named as variable file. After running ```main.py```, data gets collected into the 'data' folder by default and can be directly analysed by changing the 'file' variables into the file of interest.
+
+An example is:
+```
+file = pickle.load(open('data/all_rides.p', 'rb'))
+```
+The file names that are now included give an indication of what files can be plotted by which function.
+
 
 ### Built with
 * [Mesa](https://github.com/projectmesa/mesa) - ABM Framework
