@@ -7,12 +7,12 @@ import pickle
 
 width = 36
 height = 36
-N_cust = 120
+N_cust = 5
 pixel_ratio = 20
 num_agents = 12
 theme = "cluster"
 strategy = "Random_test_4"
-steps = 1
+steps = 30
 RUNS = 65
 strategies = [0, 0.25, 0.5, 0.75, 1]
 adaptive = True

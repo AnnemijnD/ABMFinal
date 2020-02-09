@@ -5,10 +5,15 @@ from mesa.datacollection import DataCollector
 import random
 import pickle
 import numpy as np
-from .customer import Customer
-from .attraction import Attraction
+try:
+    from .customer import Customer
+    from .attraction import Attraction
+except:
+    from customer import Customer
+    from attraction import Attraction
 
 
+# fraction of population that is random if noise is added
 FRACTION_RANDOM = 1/6
 WIDTH = 36
 HEIGHT = 36
@@ -19,11 +24,28 @@ PENALTY_PERCENTAGE = 5
 STRATEGIES = [0.0, 0.25, 0.5, 0.75, 1.0]
 
 # HARDCODED COORDINATES for cluster theme:
-xlist, ylist, positions = [12, 21, 26, 11, 9, 25, 25, 26, 20, 12, 11, 21], [17, 26, 13, 17, 18, 12, 11, 12, 28, 16, 18, 29], [(12, 17), (21, 26), (26, 13), (11, 17), (9, 18), (25, 12), (25, 11), (26, 12), (20, 28), (12, 16), (11, 18), (21, 29)]
-
+xlist = [12, 21, 26, 11, 9, 25, 25, 26, 20, 12, 11, 21]
+ylist = [17, 26, 13, 17, 18, 12, 11, 12, 28, 16, 18, 29]
+positions = [(12, 17), (21, 26), (26, 13), (11, 17), (9, 18), (25, 12), (25, 11),
+            (26, 12), (20, 28), (12, 16), (11, 18), (21, 29)]
 
 class Themepark(Model):
     def __init__(self, N_attr, N_cust, width, height, strategy, theme, max_time, weight, adaptive):
+        """
+        Args:
+            N_attr (int): the amount of attractions in the theme park
+            N_cust (int): the amout of customers in the theme park
+            width (int): the width of the theme park grid
+            height (int): the height of the theme park grid
+            strategy (str): the strategy of this run (random agents, adaptive agents
+                            or adaptive agents with noise)
+            theme (str): the setup of the park (circle, random or clustered)
+            max_time (int): the number of time steps the park will do in one run
+            weight (float): if the customer agents are non-adaptive, this is the strategy
+                            they are using
+            adaptive (bool): whether customer agents are able to switch strategies
+        """
+
         self.theme = theme
         self.max_time = max_time
         self.N_attr = N_attr
@@ -33,27 +55,41 @@ class Themepark(Model):
         self.strategies = STRATEGIES
         self.x_list, self.y_list, self.positions = xlist, ylist, positions
         self.happinesses = []
-        self.N_attr = N_attr    # num of attraction agents
-        self.N_cust = N_cust    # num of customer agents
+        self.N_attr = N_attr
+        self.N_cust = N_cust
         self.width = width
         self.height = height
         self.total_steps = 0
         self.cust_ids = N_cust
-        self.strategy = strategy
+        self.strategy = "Closest_by"
         self.grid = MultiGrid(width, height, torus=False)
         self.schedule = BaseScheduler(self)
         self.schedule_Attraction = BaseScheduler(self)
         self.schedule_Customer = BaseScheduler(self)
+
+        # keeps up the current time
         self.totalTOTAL = 0
+
+        # add attractions to park
         self.attractions = self.make_attractions()
         self.attraction_history = self.make_attr_hist()
         self.running = True
         self.data_dict = {}
+
+        # keep up a history of the strategies
         self.hist_random_strat = []
         self.hist_close_strat = []
+
+        # keep up a history of the occupation of the rides
         self.all_rides_list = []
+
+        # distribution of strategies throughout population
         self.strategy_composition = self.make_strategy_composition()
+
+        # add customers to park
         self.customers = self.add_customers(self.N_cust)
+
+        # keep up park score throughout time
         self.park_score = []
 
         for attraction in self.get_attractions():
@@ -62,7 +98,8 @@ class Themepark(Model):
                                "length": attraction.attraction_duration,
                                "waiting_list": []})
 
-        if len(self.strategies) == 6:
+        # datacollector for the visualisation of the data
+        if self.strategy == "Random_test_4":
             self.datacollector = DataCollector(
 
                 {"Random": lambda m: self.strategy_counter(self.strategies[0]),
@@ -73,7 +110,7 @@ class Themepark(Model):
                 "1.00": lambda m: self.strategy_counter(self.strategies[5]),
                 })
 
-        elif strategy == "Random":
+        elif self.strategy == "Random":
             self.datacollector = DataCollector(
             {"Random": lambda m: self.N_cust})
 
@@ -92,23 +129,29 @@ class Themepark(Model):
 
     def make_score(self):
         """
-        Calculate a score for the enire theme park.
+        Calculates and returns an efficiency score for the enire theme park. 
         """
 
+        # calculates the ideal distribution of customers over the attractions per attraction
         ideal = {}
         cust_in_row = 0
         for i in range(len(self.get_attractions())):
             ideal[i] = self.N_cust/self.N_attr
             cust_in_row += self.get_attractions()[i].N_current_cust
 
+        # calculates the difference between the ideal and the real situation
         tot_difference = 0
         for i in range(len(self.get_attractions())):
 
             difference = abs(cust_in_row/self.N_attr - self.get_attractions()[i].N_current_cust)
             tot_difference += difference
 
+        # the fraction of customers that is not optimally distributed
         fraction_not_right = (tot_difference/self.N_cust)
-        return abs(1-(fraction_not_right)) * cust_in_row/self.N_cust
+
+        # add a penalty by multiplying by the fraction of people currently in a line
+        score = abs(1-(fraction_not_right)) * cust_in_row/self.N_cust
+        return score
 
     def make_attr_hist(self):
         """
@@ -236,6 +279,7 @@ class Themepark(Model):
         else:
             if self.strategy is not "Random":
                 for i in range(round(N_cust)):
+                    print(self.weight)
                     weights_list.append(self.weight)
 
         cust_list = []
@@ -495,7 +539,6 @@ class Themepark(Model):
 
     def step(self):
         """Advance the model by one step."""
-
         if self.totalTOTAL < self.max_time:
             self.totalTOTAL += 1
             self.schedule.step()

@@ -7,7 +7,7 @@ except:
     from route import Route
 import numpy as np
 import math
-# from model import calculate_people
+
 
 
 class Customer(Agent):
@@ -66,25 +66,32 @@ class Customer(Agent):
 
     def penalty(self, current_attraction):
         """
-        This method calculates and returns penalty for attractions that were visited more
+        This method calculates and returns a penalty for attractions that were visited more
         often than other attractions.
         """
 
 
         total_difference_sum = 0
+
+        # return 0 if current attraction was not visited before
         if current_attraction == 0:
             return 0
+
+        # calculates the difference between how much the current attraction was visited
+        # and how much all other attractions were visited
         for i in range(len(self.model.attractions.values())):
             attraction = self.model.attractions[i]
 
             difference = self.history[current_attraction] - self.history[attraction]
 
+            # update the total difference
             total_difference_sum += difference
 
         if total_difference_sum < 0:
             total_difference_sum = 0
 
-        penalty = total_difference_sum * self.model.penalty_per
+        # calculates penalty by multiplying with a determinsitc value
+        penalty = (total_difference_sum * self.model.penalty_per)/100
 
         return penalty
 
@@ -216,7 +223,7 @@ class Customer(Agent):
                 attraction = i
                 break
 
-        # Update waitingtime of attraction
+        # update waitingtime of attraction
         attraction.N_current_cust += 1
 
         self.model.attraction_history[attraction][self.model.totalTOTAL] +=1
@@ -243,34 +250,34 @@ class Customer(Agent):
         # Sort by shortest distance
         indexes = []
         {indexes.append(k): v for k, v in sorted(distances.items(), key=lambda item: item[1])}
-
         return distances
 
     def get_waiting_lines(self):
         """
-        Return index of attraction-id with shortest waiting lines.
-        For example:
-        indexes = [3, 2, 5, 1, 4]
-        indicates that attraction3 has the shortest waiting line.
+        Returns dictionary of attracion-ids with their waiting lines as values.
         """
         people = self.model.calculate_people_sorted()
-        print(people)
         return people
 
     def update_strategy(self):
+        """
+        Updates the strategy by evaluating the attractions chosen by all other
+        strategies. The strategy that would have resulted in the earliest access
+        to a ride is chosen as the next strategy. Only used if adaptive = True.
+        """
 
+        # dictionary of strategies that were better than the current
         strategy_ranking = {}
         queues = self.get_waiting_lines()
         chosen_strategy = self.weight
         current_walking_distance = self.prediction_strategies[chosen_strategy][1]
         current_arrival_time = math.ceil(self.prediction_strategies[chosen_strategy][2])
-        # print("chosen_strategy:", chosen_strategy, ",line:",
-        #         self.model.attraction_history[self.current_a][current_arrival_time],
-        #         "curr_time:", self.model.totalTOTAL, ",ID", self.unique_id, ",arrivaltime",
-        #         current_arrival_time)
+
         if self.current_a is not None:
 
             for strategy in self.prediction_strategies.keys():
+
+                # does not need compare the current strategy to itself
                 if strategy == chosen_strategy:
                     continue
 
@@ -278,27 +285,30 @@ class Customer(Agent):
                 arrival_time = math.ceil(self.prediction_strategies[strategy][2])
                 walking_distance = self.prediction_strategies[strategy][1]
 
+                # if the strategy predicted the same attraction, the old strategy
+                # is prefered
                 if attraction == self.current_a:
                     continue
 
+                # if the arrival time at the predicted attraction isn't in the future
                 if math.ceil(arrival_time) < self.model.totalTOTAL:
 
                     queue_at_arrival = self.model.attraction_history[attraction][math.ceil(arrival_time)]
-                    if arrival_time + queue_at_arrival + attraction.attraction_duration < self.model.totalTOTAL:
-                        # print("strategy:", strategy, ",arrival_time:", arrival_time, ",attraction", attraction.unique_id)
-                        #
-                        # print("time after going on ride:", arrival_time + queue_at_arrival + attraction.attraction_duration)
 
+                    # if the ride would have been finished earlier, add this strategy to ranking
+                    if arrival_time + queue_at_arrival + attraction.attraction_duration < self.model.totalTOTAL:
 
                         strategy_ranking[strategy] = arrival_time + queue_at_arrival
 
-
+            # choose the strategy with the best time
             if len(strategy_ranking.values()) > 0:
                 minval = min(strategy_ranking.values())
                 res = [k for k, v in strategy_ranking.items() if v == minval]
                 if len(res) is 1:
                     best_strat = res[0]
                 else:
+
+                    # if two strategies had the same outcome, choose randomly
                     best_strat = random.choice(res)
                 self.weight = best_strat
 
@@ -307,6 +317,7 @@ class Customer(Agent):
         This method should move the customer using the `random_move()` method.
         """
 
+        # updates the data on the attraction occupation
         if self.in_attraction is True:
             self.in_attraction_list.append(1)
         else:
@@ -317,61 +328,62 @@ class Customer(Agent):
     def use_strategy(self):
         """
         This method returns the attraction predicted by the current strategy of
-        the customer.Adds a deterministic penalty per attraction based
+        the customer. Adds a deterministic penalty per attraction based
         on the penalty method.
         """
+
+        # add walking times
         predictions = self.get_walking_distances()
 
         # add waitingtimes
         waiting_times = self.get_waiting_lines()
 
-        # print(self.weight)
-
+        # make prediction based on the current strategy for all attractions
         for i in range(len(predictions.keys())):
+            predictions[i] = predictions[i] * (1 - self.weight) + waiting_times[i] * self.weight
 
-            if self.weight is "random":
-                predictions[i] = predictions[i] + waiting_times[i]
-            else:
-                predictions[i] = predictions[i] * (1 - self.weight) + waiting_times[i] * self.weight
-
-
+        # use a fraction of the attraction with the highest cost as a penalty
         maxval = max(predictions.values())
         for attraction_nr in predictions:
             penalty = self.penalty(self.model.attractions[attraction_nr])
+            predictions[attraction_nr] = predictions[attraction_nr] + maxval * penalty
 
-            predictions[attraction_nr] = predictions[attraction_nr] + maxval * (penalty/100)
-
+        # choose the attraction with the lowest cost
         minval = min(predictions.values())
         res = [k for k, v in predictions.items() if v == minval]
         if len(res) is 1:
             predicted_attraction = res[0]
         else:
+
+            # if attractions have the same cost, choose one randomly
             predicted_attraction = random.choice(res)
+
         attraction_object = self.model.get_attractions()[predicted_attraction]
-        # dit kan volgens mij ook:
-        # attraction_object = self.attractions[predicted_attraction]
+
+        # make predicitons for all strategies
         self.prediction_strategies = self.prediction_all_strategies()
 
         return self.model.attractions[predicted_attraction]
 
     def prediction_all_strategies(self):
         """
-        Makes a prediction for all possible strategies
+        Makes a prediction for all possible strategies.
         Returns a dictionary with the strategies as keys and the attractions,
         predictions and arrival times as value
         """
 
         prediction_per_strategy = {}
 
+        # add walking distances
         predictions = self.get_walking_distances()
-
 
         # add waitingtimes
         waiting_times = self.get_waiting_lines()
-        # print(len(predictions.keys()))
-        # print(predictions, waiting_times, "PRINT")
 
+        # make a prediction for all srategies
         for weight in self.all_strategies:
+
+            # make prediction based on the current strategy for all attractions
             for i in range(len(predictions.keys())):
 
                 if self.weight is None:
@@ -379,24 +391,28 @@ class Customer(Agent):
                 else:
                     predictions[i] = predictions[i] * (1 - weight) + waiting_times[i] * weight
 
-
+            # use a fraction of the attraction with the highest cost as a penalty
             maxval = max(predictions.values())
             for attraction_nr in predictions:
                 penalty = self.penalty(self.model.attractions[attraction_nr])
 
-                predictions[attraction_nr] = predictions[attraction_nr] + maxval * (penalty/100)
+                predictions[attraction_nr] = predictions[attraction_nr] + maxval * penalty
 
+            # choose the attraction with the lowest cost
             minval = min(predictions.values())
             res = [k for k, v in predictions.items() if v == minval]
             if len(res) is 1:
                 predicted_attraction = res[0]
             else:
+
+                # if attractions have the same cost, choose randomly
                 predicted_attraction = random.choice(res)
+
             attraction_object = self.model.get_attractions()[predicted_attraction]
-            # dit kan volgens mij ook:
-            # attraction_object = self.attractions[predicted_attraction]
             predictions = self.get_walking_distances()
             arrival_time = self.model.totalTOTAL + predictions[predicted_attraction]
+
+            # add to dictionary
             prediction_per_strategy[weight] = [self.model.attractions[predicted_attraction], predictions[predicted_attraction],
                                                 arrival_time]
         return prediction_per_strategy

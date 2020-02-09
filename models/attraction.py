@@ -48,7 +48,7 @@ class Attraction(Agent):
 
     def step(self):
         '''
-        Step
+        When called, this method updates the attraction info.
         '''
 
         # update the attraction waiting time history
