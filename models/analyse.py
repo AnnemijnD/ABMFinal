@@ -502,8 +502,7 @@ def plot_compare_eff():
 
 # UNCOMMENT Functions to use:
 
-# plot_eff()
-# plot_themepark_score()
+plot_eff()
 # plot_efficiency_score2()
 # plot_strategy_hist()
 # plot_strategy_hist_clust()
