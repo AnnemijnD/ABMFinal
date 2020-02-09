@@ -32,9 +32,9 @@ This will automatically open up a UI on your standard browser. The UI consists o
   * Random: customers will choose a random attraction as their next destination
 * Theme park lay-out: either circle or cluster.
 
-To use the buttons, select your choice and click on "Reset" in the right top of the screen. 
+To use the buttons, select your choice and click on "Reset" in the right top of the screen.
 
-> :warning: **Sometimes the visualisation does not respond to the buttons when using Safari** The problem should be solved by using Google Chrome. 
+> :warning: **Sometimes the visualisation does not respond to the buttons when using Safari** The problem should be solved by using Google Chrome.
 
 
 Furthermore, after starting the model, three charts are displayed. At the top, a pie chart that shows the ratio of all strategies at a specific moment.
@@ -72,6 +72,16 @@ However, if data needs to be collected for a run with a different strategy, para
 theme = "circle"
 strategy = "Closest_by"
 ```
+
+
+### Analyse data
+To analyse the data with plots, use ```analyse.py``` . Files and data to be included can be found in either the folder 'data' or 'results'. All functions require input of a specific file from the these folders, named as variable file. After running ```main.py```, data gets collected into the 'data' folder by default and can be directly analysed by changing the 'file' variables into the file of interest.
+
+An example is:
+```
+file = pickle.load(open('data/all_rides.p', 'rb'))
+```
+The file names that are now included give an indication of what files can be plotted by which function.
 
 
 ### Built with

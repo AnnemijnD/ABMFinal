@@ -9,62 +9,6 @@ RUNS = 100
 STRATEGIES = ["Random", "0.00", "0.25", "0.50", "0.75", "1.00"]
 
 
-def plot_boxplots():
-    """
-    Plot total amount of rides and waiting lines to compare strategies.
-    """
-    data = pickle.load(open('results/results_cust_all_only_strat31jan/cust_history_clust_all_only_strat.p', 'rb'))
-    score = pickle.load(open('results/results_cust_all_only_strat31jan/park_score_clust_all_only_strat.p', 'rb'))
-
-    df = pd.DataFrame(data)
-    df_score = pd.DataFrame(score)
-
-    dict = {"Random": [], "0": [], "0.25": [], "0.5": [], "0.75": [], "1": []}
-
-    # for all strategies (random, 0, 0.25, 0.75, 1)
-    for col in df:
-
-        # every column represents a customer
-        for i in df[col]:
-
-            sums = []
-            for run in i:
-                sums.append(np.sum(i[run]))
-
-            dict[str(col)].append(np.sum(sums))
-
-    df_sum = pd.DataFrame(dict)
-
-    total = pd.DataFrame(df_score.values*df_sum.values, columns=df_score.columns, index=df_score.index)
-
-    data = []
-    data_2 = []
-    names = []
-
-    for key in dict:
-        data.append(dict[key])
-
-    for key in total:
-        data_2.append(list(total[key]))
-        names.append(key)
-
-    # plotting
-    plt.xticks(np.arange(len(names))+1, names)
-    plt.title("Total amount of rides", fontsize = 16)
-    plt.boxplot(data)
-    plt.ylabel("Amount of rides", fontsize = 14)
-    plt.xlabel("Strategy", fontsize = 14)
-    plt.xticks([1,2,3,4,5,6],names)
-    plt.show()
-
-    plt.title("Total waiting times", fontsize = 16)
-    plt.boxplot(data_2)
-    plt.ylabel("Waiting time", fontsize=14)
-    plt.xlabel("Strategy", fontsize = 14)
-    plt.xticks([1,2,3,4,5,6],names)
-    plt.show()
-
-
 def plot_efficiency_score():
     file = pickle.load(open('results/results_cust_all_only_strat31jan/eff_score_clust_all_only_strat.p', 'rb'))
 
@@ -497,6 +441,62 @@ def plot_compare_eff():
     plt.ylabel("Efficiency score", fontsize=14)
     plt.legend(["Adaptive agents", "Random"])
     plt.savefig("Eff_var_1000", dpi=300)
+    plt.show()
+
+
+def plot_boxplots():
+    """
+    Plot total amount of rides and waiting lines to compare strategies.
+    """
+    data = pickle.load(open('results/results_cust_all_only_strat31jan/cust_history_clust_all_only_strat.p', 'rb'))
+    score = pickle.load(open('results/results_cust_all_only_strat31jan/park_score_clust_all_only_strat.p', 'rb'))
+
+    df = pd.DataFrame(data)
+    df_score = pd.DataFrame(score)
+
+    dict = {"Random": [], "0": [], "0.25": [], "0.5": [], "0.75": [], "1": []}
+
+    # for all strategies (random, 0, 0.25, 0.75, 1)
+    for col in df:
+
+        # every column represents a customer
+        for i in df[col]:
+
+            sums = []
+            for run in i:
+                sums.append(np.sum(i[run]))
+
+            dict[str(col)].append(np.sum(sums))
+
+    df_sum = pd.DataFrame(dict)
+
+    total = pd.DataFrame(df_score.values*df_sum.values, columns=df_score.columns, index=df_score.index)
+
+    data = []
+    data_2 = []
+    names = []
+
+    for key in dict:
+        data.append(dict[key])
+
+    for key in total:
+        data_2.append(list(total[key]))
+        names.append(key)
+
+    # plotting
+    plt.xticks(np.arange(len(names))+1, names)
+    plt.title("Total amount of rides", fontsize = 16)
+    plt.boxplot(data)
+    plt.ylabel("Amount of rides", fontsize = 14)
+    plt.xlabel("Strategy", fontsize = 14)
+    plt.xticks([1,2,3,4,5,6],names)
+    plt.show()
+
+    plt.title("Total waiting times", fontsize = 16)
+    plt.boxplot(data_2)
+    plt.ylabel("Waiting time", fontsize=14)
+    plt.xlabel("Strategy", fontsize = 14)
+    plt.xticks([1,2,3,4,5,6],names)
     plt.show()
 
 
